@@ -4,18 +4,54 @@ import numpy as np
 matrix = np.array([[3.72, 3.47, 3.06, 30.74],
                    [4.47, 4.10, 3.63, 36.80],
                    [4.96, 4.53, 4.01, 40.79]])
-print("Исходная матрица\n", matrix)
+
+A = np.array([[3.72, 3.47, 3.06],
+              [4.47, 4.10, 3.63],
+              [4.96, 4.53, 4.01]])
+
+b = np.array([30.74, 36.80, 40.79])
+
+print("Исходная матрица:\n", matrix)
 
 
-def strait_go(matrix):
+# def strait_go(A):
+#     matrix = np.copy(A)
+#     n = len(matrix)
+#     for i in range(n):
+#         for j in range(n, i - 1, -1):
+#             matrix[i][j] /= matrix[i][i]
+#         for k in range(i + 1, n):
+#             for j in range(n, i - 1, -1):
+#                 matrix[k][j] -= matrix[k][i] * matrix[i][j]
+#     print("Полученная путем Гауссовскими преобразований матрица:\n", matrix)
+#     return matrix
+
+
+def gaussian_elimination_with_det(matrix):
     n = len(matrix)
+    det = 1.0  # Инициализируем определитель единицей
+
+    # Создаем копию исходной матрицы
+    matrix_copy = np.copy(matrix)
+
     for i in range(n):
-        for j in range(n, i - 1, -1):
-            matrix[i][j] /= matrix[i][i]
-        for k in range(i + 1, n):
-            for j in range(n, i - 1, -1):
-                matrix[k][j] -= matrix[k][i] * matrix[i][j]
-    print("Полученная путем Гауссовскими преобразований матрица:\n", matrix)
+        for j in range(i + 1, n):
+            factor = matrix_copy[j][i] / matrix_copy[i][i]
+            for k in range(i, n + 1):  # до n + 1 потому что она не квадратная
+                matrix_copy[j][k] -= factor * matrix_copy[i][k]
+
+        # Обновляем определитель
+        det *= matrix_copy[i][i]
+
+        # Делаем единицу на главной диагонали
+        matrix_copy[i] /= matrix_copy[i][i]
+
+    return matrix_copy, det
+
+
+upper_triangular_matrix, determinant = gaussian_elimination_with_det(matrix)
+print("Верхнетреугольная матрица\n", upper_triangular_matrix)
+print("Определитель матрицы =", determinant)
 
 
 def solution(matrix):
@@ -31,14 +67,13 @@ def solution(matrix):
     return x
 
 
-strait_go(matrix)
-x = solution(matrix)  # Получаем решение
+# 1 - 2
 
-# Создание вектора правой части b
-b = matrix[:, -1]
-
+x = solution(upper_triangular_matrix)  # Получаем решение
+print('Решение. Вектор x = \n', x)
+print('-----------------------------------')
 # Вычисление вектора невязки
-print(matrix[:, :-1])
+
 r = b - np.dot(matrix[:, :-1], x)
 
 # Вычисление норм вектора невязки
@@ -56,11 +91,6 @@ print("Вектор невязки r:\n", r)
 print("Норма 1:", norm_1)
 print("Норма ∞:", norm_inf)
 print("Норма 2:", norm_2)
-
-# Вычисление определителя
-A = np.array([[3.72, 3.47, 3.06],
-              [4.47, 4.10, 3.63],
-              [4.96, 4.53, 4.01]])
 
 
 # Нахождение определителя методом Гаусса
@@ -113,23 +143,18 @@ def inverse_matrix(A):
             if row != col:
                 factor = augmented_matrix[row, col]
                 augmented_matrix[row] -= factor * augmented_matrix[col]
-    print(augmented_matrix)
     return augmented_matrix[:, n:]
 
 
-# Пример использования
-A = np.array([[3.72, 3.47, 3.06],
-              [4.47, 4.10, 3.63],
-              [4.96, 4.53, 4.01]])
-
 A_inv = inverse_matrix(A)
 
-print("Обратная матрица A^-1:")
-print(A_inv)
+print("Обратная матрица A^-1:\n", A_inv)
+print('Перемноженные матрицы:\n', np.dot(A, A_inv))
 
-print(A)
-a_inv = np.linalg.inv(A)
-print('rev matrix', a_inv)
+# Шаг 3: Рассчитайте нормы матрицы A и A^-1
+norm_A = np.linalg.norm(A, ord=2)  # Пример использования нормы 2 (L2-нормы)
+norm_A_inv = np.linalg.norm(A_inv, ord=2)  # Пример использования нормы 2 (L2-нормы)
 
-result = np.dot(A, a_inv)
-print(result)
+# Шаг 4: Рассчитайте число обусловленности ν
+condition_number = norm_A * norm_A_inv
+print("Число обусловленности ν =", condition_number)
