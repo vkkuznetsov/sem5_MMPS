@@ -12,6 +12,7 @@ A = np.array([[3.72, 3.47, 3.06],
 b = np.array([30.74, 36.80, 40.79])
 
 print("Исходная матрица:\n", matrix)
+print('----------------------------------------')
 
 
 # def strait_go(A):
@@ -26,7 +27,7 @@ print("Исходная матрица:\n", matrix)
 #     print("Полученная путем Гауссовскими преобразований матрица:\n", matrix)
 #     return matrix
 
-
+# 1 - 3, 5
 def gaussian_elimination_with_det(matrix):
     n = len(matrix)
     det = 1.0  # Инициализируем определитель единицей
@@ -37,7 +38,7 @@ def gaussian_elimination_with_det(matrix):
     for i in range(n):
         for j in range(i + 1, n):
             factor = matrix_copy[j][i] / matrix_copy[i][i]
-            for k in range(i, n + 1):  # до n + 1 потому что она не квадратная
+            for k in range(i, len(matrix[i])):  # до n + 1 потому что она не квадратная
                 matrix_copy[j][k] -= factor * matrix_copy[i][k]
 
         # Обновляем определитель
@@ -53,6 +54,9 @@ upper_triangular_matrix, determinant = gaussian_elimination_with_det(matrix)
 print("Верхнетреугольная матрица\n", upper_triangular_matrix)
 print("Определитель матрицы =", determinant)
 
+det_true = np.linalg.det(A)
+print('Определитель который получится у Numpy', det_true)
+
 
 def solution(matrix):
     n = len(matrix)
@@ -67,61 +71,49 @@ def solution(matrix):
     return x
 
 
-# 1 - 2
-
 x = solution(upper_triangular_matrix)  # Получаем решение
 print('Решение. Вектор x = \n', x)
-print('-----------------------------------')
+print('----------------------------------------')
+
+# 4
 # Вычисление вектора невязки
 
-r = b - np.dot(matrix[:, :-1], x)
+def linf_norm_matrix(matrix):
+    max_norm = 0
+    for row in matrix:
+        row_norm = sum(abs(x) for x in row)
+        max_norm = max(max_norm, row_norm)
+    return max_norm
 
-# Вычисление норм вектора невязки
-for i in range(len(matrix)):
-    r[i] = b[i]
-    for j in range(len(matrix)):
-        r[i] -= matrix[i][j] * x[j]
-print(r)
-norm_1 = np.linalg.norm(r, ord=1)  # Норма 1
-norm_inf = np.linalg.norm(r, ord=np.inf)  # Норма ∞
-norm_2 = np.linalg.norm(r, ord=2)  # Норма 2
 
-print("Решение x:\n", x)
+
+r = b - np.dot(A, x)
+
+
+# Вычисление вектора невязки алгоритмом
+def vector_unchain(matrix, x):
+    for col in range(len(matrix)):
+        r[col] = b[col]
+        for row in range(len(matrix)):
+            r[col] -= matrix[col][row] * x[row]
+    return r
+vek = linf_norm_matrix(A)
+
+# Вычисление нормs inf
+norm_inf = max(abs(r))
 print("Вектор невязки r:\n", r)
-print("Норма 1:", norm_1)
-print("Норма ∞:", norm_inf)
-print("Норма 2:", norm_2)
+print('Вектор невзяки ' , vek)
+print('Норма inf', norm_inf)
+print('----------------------------------------')
 
 
-# Нахождение определителя методом Гаусса
-def gaussian_elimination(A):
-    matrix = np.copy(A)
-    n = len(matrix)
-
-    det = 1
-    for i in range(n):
-        if matrix[i][i] == 0:
-            return 0
-        det *= matrix[i][i]
-        for j in range(i + 1, n):
-            factor = matrix[j][i] / matrix[i][i]
-            for k in range(i, n):
-                matrix[j][k] -= factor * matrix[i][k]
-    return det
-
-
-det = gaussian_elimination(A)
-print('Определитель который получился у меня', det)
-det_true = np.linalg.det(A)
-print('Определитель который получится у Numpy', det_true)
-
-
+# 6
 # Нахождение обратной матрицы методом Гаусса
-def inverse_matrix(A):
-    n = A.shape[0]
+def inverse_matrix(a):
+    n = a.shape[0]
 
     # Создаем расширенную матрицу [A | E]
-    augmented_matrix = np.hstack((A, np.identity(n)))
+    augmented_matrix = np.hstack((a, np.identity(n)))
 
     for col in range(n):
         # Находим максимальный элемент в текущем столбце
@@ -151,10 +143,21 @@ A_inv = inverse_matrix(A)
 print("Обратная матрица A^-1:\n", A_inv)
 print('Перемноженные матрицы:\n', np.dot(A, A_inv))
 
-# Шаг 3: Рассчитайте нормы матрицы A и A^-1
-norm_A = np.linalg.norm(A, ord=2)  # Пример использования нормы 2 (L2-нормы)
-norm_A_inv = np.linalg.norm(A_inv, ord=2)  # Пример использования нормы 2 (L2-нормы)
+# Рассчитать нормы матрицы A и A^-1
 
-# Шаг 4: Рассчитайте число обусловленности ν
+# Использую норму 2 (L2-нормы)
+norm_A =  norm_inf
+# Нахожу нормы для обратной матрицы
+norm_A_inv = linf_norm_matrix(A_inv)
+A_inv_linf_norm = np.linalg.norm(A_inv, ord=np.inf)
+print(norm_A_inv, 'норма моя')
+print("Lбесконечность-норма обратной матрицы A^-1 (с использованием NumPy):", A_inv_linf_norm)
+# Рассчет числа обусловленности ν
 condition_number = norm_A * norm_A_inv
 print("Число обусловленности ν =", condition_number)
+# Сравнение с результатами numpy
+A_inv_np = np.linalg.inv(A)
+condition_number_np = np.linalg.cond(A)
+
+print("Обратная матрица A^-1 (numpy):\n", A_inv_np)
+print("Число обусловленности (numpy):", condition_number_np)
