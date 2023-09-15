@@ -75,34 +75,23 @@ x = solution(upper_triangular_matrix)  # Получаем решение
 print('Решение. Вектор x = \n', x)
 print('----------------------------------------')
 
+
 # 4
 # Вычисление вектора невязки
 
-def linf_norm_matrix(matrix):
-    max_norm = 0
-    for row in matrix:
-        row_norm = sum(abs(x) for x in row)
-        max_norm = max(max_norm, row_norm)
-    return max_norm
-
-
-
-r = b - np.dot(A, x)
-
-
 # Вычисление вектора невязки алгоритмом
 def vector_unchain(matrix, x):
+    r = np.zeros(len(matrix))
     for col in range(len(matrix)):
         r[col] = b[col]
         for row in range(len(matrix)):
             r[col] -= matrix[col][row] * x[row]
     return r
-vek = linf_norm_matrix(A)
 
-# Вычисление нормs inf
+# Вычисление нормы inf\
+r = vector_unchain(A, x)
 norm_inf = max(abs(r))
-print("Вектор невязки r:\n", r)
-print('Вектор невзяки ' , vek)
+print(r)
 print('Норма inf', norm_inf)
 print('----------------------------------------')
 
@@ -142,22 +131,28 @@ A_inv = inverse_matrix(A)
 
 print("Обратная матрица A^-1:\n", A_inv)
 print('Перемноженные матрицы:\n', np.dot(A, A_inv))
+print('----------------------------------------')
 
 # Рассчитать нормы матрицы A и A^-1
 
-# Использую норму 2 (L2-нормы)
-norm_A =  norm_inf
-# Нахожу нормы для обратной матрицы
-norm_A_inv = linf_norm_matrix(A_inv)
-A_inv_linf_norm = np.linalg.norm(A_inv, ord=np.inf)
-print(norm_A_inv, 'норма моя')
-print("Lбесконечность-норма обратной матрицы A^-1 (с использованием NumPy):", A_inv_linf_norm)
-# Рассчет числа обусловленности ν
-condition_number = norm_A * norm_A_inv
-print("Число обусловленности ν =", condition_number)
+
+def l2_norm_matrix(matrix):
+    sum_of_squares = 0.0
+
+    for row in matrix:
+        for element in row:
+            sum_of_squares += element ** 2
+
+    l2_norm = np.sqrt(sum_of_squares)
+    return l2_norm
+
+
+norm_A_L2 = l2_norm_matrix(A)
+norm_A_inv_L2 = l2_norm_matrix(A_inv)
+condition_number_L2 = norm_A_L2 * norm_A_inv_L2
+print( 'Число обусловленности по л2:',condition_number_L2)
+
 # Сравнение с результатами numpy
 A_inv_np = np.linalg.inv(A)
 condition_number_np = np.linalg.cond(A)
-
-print("Обратная матрица A^-1 (numpy):\n", A_inv_np)
 print("Число обусловленности (numpy):", condition_number_np)
