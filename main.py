@@ -88,10 +88,11 @@ def vector_unchain(matrix, x):
             r[col] -= matrix[col][row] * x[row]
     return r
 
-# Вычисление нормы inf\
+
 r = vector_unchain(A, x)
+# Вычисление нормы inf\
 norm_inf = max(abs(r))
-print(r)
+print('Вектор нормы = ',r)
 print('Норма inf', norm_inf)
 print('----------------------------------------')
 
@@ -133,6 +134,7 @@ print("Обратная матрица A^-1:\n", A_inv)
 print('Перемноженные матрицы:\n', np.dot(A, A_inv))
 print('----------------------------------------')
 
+
 # Рассчитать нормы матрицы A и A^-1
 
 
@@ -150,9 +152,11 @@ def l2_norm_matrix(matrix):
 norm_A_L2 = l2_norm_matrix(A)
 norm_A_inv_L2 = l2_norm_matrix(A_inv)
 condition_number_L2 = norm_A_L2 * norm_A_inv_L2
-print( 'Число обусловленности по л2:',condition_number_L2)
+print(f'Число обусловленности по л2: {condition_number_L2:.15f}')
+
 
 # Сравнение с результатами numpy
 A_inv_np = np.linalg.inv(A)
 condition_number_np = np.linalg.cond(A)
 print("Число обусловленности (numpy):", condition_number_np)
+print(condition_number_np/condition_number_L2*100)
